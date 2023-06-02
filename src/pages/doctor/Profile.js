@@ -1,50 +1,33 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
-import { Row, Col, Form, Input, TimePicker, message } from "antd";
+import React, { useEffect, useState } from "react";
+import Layout from "./../../components/Layout";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import Layout from "../../components/Layout";
-import { hideLoading, showLoading } from "../../redux/features/alertSlice";
-import dayjs from 'dayjs';
+import { useParams, useNavigate } from "react-router-dom";
+import { Col, Form, Input, Row, TimePicker, message } from "antd";
+import { useSelector, useDispatch } from "react-redux";
+import { showLoading, hideLoading } from "../../redux/features/alertSlice";
+import moment from "moment";
 
 const Profile = () => {
-
-  const {user} = useSelector(state => state.user);
-  const [doctor,setDoctor] = useState();
-  const params = useParams();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const getDoctorInfo = async (req,res) => {
-    try {
-      const res = await axios.post('/api/v1/doctor/getDoctorInfo',{
-        userId: params.id,
-      },{
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if(res.data.success){
-        setDoctor(res.data.data);
-        message.success(res.data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      message.error('getDoctorInfo func is not working')
-    }
-  }
-  const handleFinish = async (values) => {
+	const { user } = useSelector((state) => state.user);
+	const [doctor, setDoctor] = useState(null);
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
+	const params = useParams();
+	// update doc ==========
+	//handle form
+	const handleFinish = async (values) => {
 		try {
 			dispatch(showLoading());
 			const res = await axios.post(
 				"/api/v1/doctor/updateProfile",
-				{ ...values, userId: user?._id ,
-          timings: [
-            dayjs(values.timings[0]).format("HH:mm"),
-            dayjs(values.timings[1]).format("HH:mm")
-          ]
-        },
+				{
+					...values,
+					userId: user._id,
+					timings: [
+						moment(values.timings[0]).format("HH:mm"),
+						moment(values.timings[1]).format("HH:mm"),
+					],
+				},
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,26 +36,46 @@ const Profile = () => {
 			);
 			dispatch(hideLoading());
 			if (res.data.success) {
-				message.success("Successfully applied doctor");
+				message.success(res.data.message);
 				navigate("/");
 			} else {
-				message.error(res.data.error);
+				message.error(res.data.success);
 			}
-		} catch (err) {
+		} catch (error) {
 			dispatch(hideLoading());
-			console.log(err);
-			message.error("Apply Doctor route went wrong");
+			console.log(error);
+			message.error("Somthing Went Wrrong ");
+		}
+	};
+	// update doc ==========
+
+	//getDOc Details
+	const getDoctorInfo = async () => {
+		try {
+			const res = await axios.post(
+				"/api/v1/doctor/getDoctorInfo",
+				{ userId: params.id },
+				{
+					headers: {
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
+					},
+				}
+			);
+			if (res.data.success) {
+				setDoctor(res.data.data);
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	};
 
-  useEffect(() => {
-    getDoctorInfo();
-  },[]);
-
-  return (
+	useEffect(() => {
+		getDoctorInfo();
+		//eslint-disable-next-line
+	}, []);
+	return (
 		<Layout>
 			<h1>Manage Profile</h1>
-
 			{doctor && (
 				<Form
 					layout="vertical"
@@ -81,12 +84,12 @@ const Profile = () => {
 					initialValues={{
 						...doctor,
 						timings: [
-							dayjs(doctor.timings[0],"HH:mm"),
-							dayjs(doctor.timings[1],"HH:mm"),
+							moment(doctor.timings[0], "HH:mm"),
+							moment(doctor.timings[1], "HH:mm"),
 						],
 					}}
 				>
-					<h4>Personal Details :</h4>
+					<h4 className="">Personal Details : </h4>
 					<Row gutter={20}>
 						<Col xs={24} md={24} lg={8}>
 							<Form.Item
@@ -95,7 +98,7 @@ const Profile = () => {
 								required
 								rules={[{ required: true }]}
 							>
-								<Input type="text" placeholder="your name" />
+								<Input type="text" placeholder="your first name" />
 							</Form.Item>
 						</Col>
 						<Col xs={24} md={24} lg={8}>
@@ -115,10 +118,9 @@ const Profile = () => {
 								required
 								rules={[{ required: true }]}
 							>
-								<Input type="text" placeholder="your phone" />
+								<Input type="text" placeholder="your contact no" />
 							</Form.Item>
 						</Col>
-
 						<Col xs={24} md={24} lg={8}>
 							<Form.Item
 								label="Email"
@@ -126,7 +128,7 @@ const Profile = () => {
 								required
 								rules={[{ required: true }]}
 							>
-								<Input type="text" placeholder="your email" />
+								<Input type="email" placeholder="your email address" />
 							</Form.Item>
 						</Col>
 						<Col xs={24} md={24} lg={8}>
@@ -141,7 +143,7 @@ const Profile = () => {
 								required
 								rules={[{ required: true }]}
 							>
-								<Input type="text" placeholder="your address" />
+								<Input type="text" placeholder="your clinic address" />
 							</Form.Item>
 						</Col>
 					</Row>
@@ -169,38 +171,30 @@ const Profile = () => {
 						</Col>
 						<Col xs={24} md={24} lg={8}>
 							<Form.Item
-								label="Fees Per Consultation"
-								name="feesPerConsultation"
+								label="Fees Per Cunsaltation"
+								name="feesPerCunsaltation"
 								required
 								rules={[{ required: true }]}
 							>
-								<Input type="text" placeholder="your fees" />
+								<Input type="text" placeholder="your contact no" />
 							</Form.Item>
 						</Col>
-
 						<Col xs={24} md={24} lg={8}>
-							<Form.Item
-								label="Timings"
-								name="timings"
-								required
-								rules={[{ required: true }]}
-							>
+							<Form.Item label="Timings" name="timings" required>
 								<TimePicker.RangePicker format="HH:mm" />
 							</Form.Item>
 						</Col>
 						<Col xs={24} md={24} lg={8}></Col>
 						<Col xs={24} md={24} lg={8}>
-							{/* <div className="d-flex justify-content-end"> */}
-								<button className="btn btn-primary form-btn" type="submit">
-									Update
-								</button>
-							{/* </div> */}
+							<button className="btn btn-primary form-btn" type="submit">
+								Update
+							</button>
 						</Col>
 					</Row>
 				</Form>
 			)}
 		</Layout>
 	);
-}
+};
 
-export default Profile
+export default Profile;

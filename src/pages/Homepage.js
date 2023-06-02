@@ -1,60 +1,41 @@
-import { message, Row } from 'antd';
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import DoctorsList from '../components/DoctorsList';
-import Layout from '../components/Layout';
-
-
-const Homepage = () => {
-  
-  const [doctors,setDoctors] = useState([]);
-  // const getUserData = async () =>{
-  //   try{
-  //     const res = await axios.post('/api/v1/user/getUserData',{},{
-  //       headers: {
-  //         Authorization: 'Bearer ' + localStorage.getItem('token')
-  //       }
-  //     });
-  //     message.success('Successfully send token');
-  //   }catch(err){
-  //     console.log(err);
-  //     message.error('could not send token');
-  //   }
-
-  // }
-  const getDoctorsData = async () => {
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Layout from "../components/Layout";
+import { Row } from "antd";
+import DoctorList from "../components/DoctorList";
+const HomePage = () => {
+	const [doctors, setDoctors] = useState([]);
+	// login user data
+	const getUserData = async () => {
 		try {
 			const res = await axios.get(
 				"/api/v1/user/getAllDoctors",
+
 				{
 					headers: {
 						Authorization: "Bearer " + localStorage.getItem("token"),
 					},
 				}
 			);
-			if(res.data.success){
-        message.success(res.data.message);
-        setDoctors(res.data.data);
-      }
-		} catch (err) {
-			console.log(err);
-			message.error("could not send token");
+			if (res.data.success) {
+				setDoctors(res.data.data);
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	};
-  useEffect(() => {
-    getDoctorsData();
-  },[]);
 
-  return (
+	useEffect(() => {
+		getUserData();
+	}, []);
+	return (
 		<Layout>
-			<h1 className='text-center'>Homepage</h1>
-      <Row>
-        {doctors && doctors.map(doctor => (
-          <DoctorsList doctor={doctor}/>
-        ))}
-      </Row>
+			<h1 className="text-center">Home Page</h1>
+			<Row>
+				{doctors && doctors.map((doctor) => <DoctorList doctor={doctor} />)}
+			</Row>
 		</Layout>
 	);
-}
+};
 
-export default Homepage
+export default HomePage;
