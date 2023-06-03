@@ -9,7 +9,7 @@ const HomePage = () => {
 	const getUserData = async () => {
 		try {
 			const res = await axios.get(
-				"/api/v1/user/getAllDoctors",
+				"https://doctor-appointment-app-api2.onrender.com/api/v1/user/getAllDoctors",
 
 				{
 					headers: {
